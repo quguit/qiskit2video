@@ -55,47 +55,22 @@ Make sure you have the following libraries and tools installed on your machine:
 
 ```python
 # Exemplo de código Python para representar um qubit na esfera de Bloch
-import numpy as np
-from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit, Aer, execute, BasicAer, transpile
-from qiskit.quantum_info import Statevector
-from qiskit.visualization import plot_bloch_multivector
-from qiskit.visualization import array_to_latex
-from qiskit.visualization import plot_state_qsphere, plot_bloch_multivector
 
-bell = QuantumCircuit(2, 2)
-bell.h(0)
-bell.cx(0, 1)
+from qiskit2video import *
 
-meas = QuantumCircuit(2, 2)
-meas.measure([0,1], [0,1])
+qreg_q = QuantumRegister(1, 'q')
+creg_c = ClassicalRegister(0, 'c')
+circuit = QuantumCircuit(qreg_q, creg_c)
 
-# execute the quantum circuit
-backend = BasicAer.get_backend('qasm_simulator') # the device to run on
-circ = bell.compose(meas)
-result = backend.run(transpile(circ, backend), shots=1000).result()
-counts  = result.get_counts(circ)
-print(counts)
+circuit.x(qreg_q[0])
+circuit.h(qreg_q[0])
+circuit.h(qreg_q[0])
+circuit.z(qreg_q[0])
+circuit.h(qreg_q[0])
+circuit.y(qreg_q[0])
+circuit.x(qreg_q[0])
 
-backend = BasicAer.get_backend('statevector_simulator') # the device to run on
-result = backend.run(transpile(bell, backend)).result()
-psi = result.get_statevector(bell)
-print(psi)
-vector = psi
-#
-# # Simulação do circuito para obter o estado final
-# simulator = Aer.get_backend('qasm_simulator')
-# result = execute(circuit, backend=simulator).result()
-# print(np.array(result.get_statevector), np.array(result.get_counts(circuit)))
-# vector = np.asarray(result.get_statevector)
-# print(vector)
-#
-# # Converter o vetor de estado para o formato desejado
-# formatted_vector = np.asarray(vector)
-#
-# print(formatted_vector)
-
-plot_state_qsphere(psi)
-plot_bloch_multivector(psi)
+circuit.video(1)
 ```
 
 Contributions are welcome! 
