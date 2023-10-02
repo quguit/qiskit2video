@@ -1,4 +1,3 @@
-**qiskit2video**
 
 **Using the qiskit2video library, we can create animated images demonstrating the quantum state of a qubit in terms of bloch sphere. This tool shows flexibility by allowing the user to choose the animation speed and the duration of play-back.**
 
