@@ -104,7 +104,7 @@ In the event that you come across bugs, problems or have ideas for
 additional features, feel free to open an 
 issue or send a pull request.
 
-This project is governed by the MIT License - check the LICENSE file for more information.
+This project is governed by the Apache License - check the LICENSE file for more information.
 
  Have fun discovering the wonders of quantum computing and exploring the analysis of qubits on the Bloch sphere.
 
