@@ -10,29 +10,50 @@ class QuantumCircuit(QuantumCircuit):
         self.sv.append(simulator(self))
         self.album = []
         self.album.append(generate_circuit_image(self))
+        #self.entanglement = []  # Dicionário para rastrear o entrelaçamento
     # Adicione um método personalizado para a operação X
     def x(self, qubit, **kwargs):
         super().x(qubit)
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
+        #self.add_entanglement(qubit)
+
+    # Adicione métodos personalizados para as operações quânticas aqui
+
+    # def add_entanglement(self, qubit):
+    #     """
+    #     Registra o entrelaçamento entre dois qubits.
+    #     """
+    #     if qubit not in self.entanglement:
+    #         self.entanglement.append([])
+    #     self.entanglement.append(qubit)
+
+
+
 
     # Adicione um método personalizado para a operação Pauli y
     def y(self, qubit):
         super().y(qubit)
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
+        #self.add_entanglement(qubit)
+
 
     # Adicione um método personalizado para a operação s
     def s(self, qubit):
         super().s(qubit)
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
+        #self.add_entanglement(qubit)
+
 
     # Adicione um método personalizado para a operação Pauli-z
     def z(self, qubit):
         super().z(qubit)
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
+        #self.add_entanglement(qubit)
+
 
     # Adicione um método personalizado para a operação t
     def t(self, qubit):
@@ -40,17 +61,22 @@ class QuantumCircuit(QuantumCircuit):
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
 
+
     # Adicione um método personalizado para a operação H
     def h(self, qubit):
         super().h(qubit)
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
+        #self.add_entanglement(self.calculate_entanglement(qubit))
+
 
     # Adicione um método personalizado para a operação U
     def u(self, theta1, theta2, theta3, qubit):
         super().u(theta1, theta2, theta3, qubit)
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
+        #self.add_entanglement(self.calculate_entanglement(qubit))
+
 
 
     def video(self, speed): # bideo, velocidade, exportação,
@@ -77,19 +103,21 @@ class QuantumCircuit(QuantumCircuit):
             #adiciona o vetor a cena
             bloch_sphere.play(Create(arrow))
 
+
+            # # Adicione informações sobre o entrelaçamento à cena
+            # entanglement_text = Text(f"Entanglement: {entanglement[i]:.2f}")
+            # entanglement_text.to_corner(UL)
+            # bloch_sphere.add_fixed_in_frame_mobjects(entanglement_text)
+
             # Verifique se existe um próximo vetor na lista
             if i < len(arrows) - 1:
-
-
                 next_arrow = arrows[i + 1]
-                bloch_sphere.play(Transform(arrow, next_arrow))
-
-
+                transition_time = 0.5  # Ajuste o tempo de transição conforme necessário
+                bloch_sphere.play(Transform(arrow, next_arrow, run_time=transition_time))
 
             # Remova a seta anterior
             if i > 0:
                 bloch_sphere.remove(arrows[i - 1])
 
-
-        bloch_sphere.render()
+        bloch_sphere.render( )
 

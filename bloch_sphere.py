@@ -1,4 +1,4 @@
-
+from qiskit.quantum_info import entropy
 from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit, Aer, execute, BasicAer, transpile, assemble
 from numpy import pi
 from qiskit.visualization import circuit_drawer
@@ -27,7 +27,7 @@ def create_arrow(x, y, z, phase):
         end=end,
         resolution=8,
         color=BLUE
-    )
+        )
 
     return arrow
 
@@ -75,10 +75,10 @@ class BlochSphere(ThreeDScene):
         ket0 = axes.get_z_axis_label(Tex(r"$| 0 \rangle$")).rotate(0, axis=LEFT).next_to(axes.z_axis, 1.0)
         ket1 = axes.get_z_axis_label(Tex(r"$| 1 \rangle$")).next_to(axes.z_axis, -2.0).rotate(135, Z_AXIS)
         ketX = axes.get_x_axis_label(Tex(r"$| + \rangle$")).next_to(axes.x_axis, 2.5).rotate(-10, axis=RIGHT)
-        ketY = axes.get_y_axis_label(Tex(r"$| - \rangle$")).next_to(axes.y_axis, 5).rotate(70, axis=UP)
+        #ketY = axes.get_y_axis_label(Tex(r"$| - \rangle$")).next_to(axes.y_axis, 5).rotate(70, axis=UP)
 
         # Add objects (axes, sphere, labels) to the scene
-        self.add(axes, sphere, ket0, ket1, ketX, ketY)
+        self.add(axes, sphere, ket0, ket1, ketX)
 
 
 
@@ -138,4 +138,25 @@ def generate_circuit_image(circuit):
 
     return circuit_image
 
+class QuantumCircuit(QuantumCircuit):
+    # ...
+
+    def calculate_entanglement(self, qubit1, qubit2):
+        """
+        Calcula a entropia de entrelaçamento entre dois qubits.
+        """
+        # Crie um circuito quântico temporário para medir o entrelaçamento
+        temp_circuit = QuantumCircuit(2)
+        temp_circuit.append(self, [0, 1])
+
+        # Execute o simulador
+        result = execute(temp_circuit, Aer.get_backend('statevector_simulator')).result()
+
+        # Obtenha o vetor de estado resultante
+        state_vector = result.get_statevector()
+
+        # Calcule a entropia de entrelaçamento entre os dois qubits
+        entanglement = entropy(state_vector, base=2, qargs=[qubit1, qubit2])
+
+        return entanglement
 
