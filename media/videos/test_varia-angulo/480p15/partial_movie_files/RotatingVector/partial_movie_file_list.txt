@@ -1,0 +1,5 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/guilherme/Área de Trabalho/Github/qiskit2video/media/videos/test_varia-angulo/480p15/partial_movie_files/RotatingVector/2173882768_1206440719_518889212.mp4'
+file 'file:/home/guilherme/Área de Trabalho/Github/qiskit2video/media/videos/test_varia-angulo/480p15/partial_movie_files/RotatingVector/2335598466_3776593507_2567344763.mp4'
+file 'file:/home/guilherme/Área de Trabalho/Github/qiskit2video/media/videos/test_varia-angulo/480p15/partial_movie_files/RotatingVector/2335598466_2440863723_138379239.mp4'
+file 'file:/home/guilherme/Área de Trabalho/Github/qiskit2video/media/videos/test_varia-angulo/480p15/partial_movie_files/RotatingVector/2335598466_1329314881_2632906189.mp4'
