@@ -1,0 +1,3 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/guilherme/Área de Trabalho/Github/qiskit2video/Trajetorias/media/videos/test/480p15/partial_movie_files/BlochSphereRotation/2396790657_3886678795_3934525309.mp4'
+file 'file:/home/guilherme/Área de Trabalho/Github/qiskit2video/Trajetorias/media/videos/test/480p15/partial_movie_files/BlochSphereRotation/3787856957_3776593507_3287823442.mp4'

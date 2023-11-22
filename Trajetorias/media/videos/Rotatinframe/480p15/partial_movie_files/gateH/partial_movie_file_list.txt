@@ -1,0 +1,4 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/guilherme/Área de Trabalho/Github/qiskit2video/Trajetorias/media/videos/Rotatinframe/480p15/partial_movie_files/gateH/2396790657_2661994166_758324813.mp4'
+file 'file:/home/guilherme/Área de Trabalho/Github/qiskit2video/Trajetorias/media/videos/Rotatinframe/480p15/partial_movie_files/gateH/3787856957_1909728036_930713179.mp4'
+file 'file:/home/guilherme/Área de Trabalho/Github/qiskit2video/Trajetorias/media/videos/Rotatinframe/480p15/partial_movie_files/gateH/3787856957_1329314881_1170942455.mp4'
