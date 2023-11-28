@@ -5,11 +5,12 @@ from qiskit.visualization import circuit_drawer
 from manim import *
 import numpy as np
 import tempfile, os
+    
+origin = (0, -4, -2) #variable global
 
 
 # Function to create a 3D arrow representing a quantum state
 def create_arrow(x, y, z):
-    origin = (0, -4, -2)
     end = np.array([2 * x, (2 * y) - 4, (2 * z) - 2])
 
     # Map the phase to a color according to qiskit conventions
@@ -83,7 +84,8 @@ class BlochSphere(ThreeDScene):
         self.add(axes, sphere, ket0, ket1, ketX)
 
         # Configuração da câmera
-        self.set_camera_orientation(phi=pi / 2.5, theta=pi / 4, zoom=1.1)
+        #self.set_camera_orientation(phi=pi / 2.5, theta=pi / 4, zoom=1.1)
+        self.set_camera_orientation(phi=60 * DEGREES, theta=45 * DEGREES)
 
         # self.play(FadeIn(sphere))
         # self.wait(5)
@@ -190,7 +192,7 @@ class QuantumCircuit(QuantumCircuit):
         self.album.append(generate_circuit_image(self))
         # self.add_entanglement(self.calculate_entanglement(qubit))
 
-    def video(self, speed):  # bideo, velocidade, exportação,
+    def video(self, speed = 15, frames = 30):  # bideo, velocidade, exportação,
         # criando uma cena 3D
         bloch_sphere = BlochSphere()
         # executando o construtor
@@ -199,8 +201,9 @@ class QuantumCircuit(QuantumCircuit):
         arrows = [create_arrow(*position) for position in self.sv]
         #Testando com inicialização fora do laçõ para evitar repetição
         arrow_start = arrows[0]
+        arrow_end = arrows[1]
         bloch_sphere.add(arrow_start)
-
+        # r = np.linalg.norm(arrow_start.get_end())
         for i, arrow in enumerate(arrows):
             # Adiciona a imagem do circuito correspondente a esta etapa
             circuit_image = self.album[i]
@@ -211,33 +214,44 @@ class QuantumCircuit(QuantumCircuit):
             # Adicione a imagem à cena como um objeto fixo na moldura
             bloch_sphere.add_fixed_in_frame_mobjects(circuit_image)
 
-            # aguarda o tempo em segundos da variavel speed
-            bloch_sphere.wait(speed)
-
-            # adiciona o vetor a cena
-            bloch_sphere.play(Create(arrows[i]))
+            vector_points = []
 
             # Verifique se existe um próximo vetor na lista
+            arrow_start = arrows[i]
+            arrow_end = arrows[i + 1]
 
-            if i < len(arrows) - 1:
-                arrow_start = arrows[i]
-                arrow_end = arrows[i + 1]
+            start_vec = arrow_start.get_end()  # pega a posição final end
+            end_vec = arrow_end.get_end()  # pega a posição final end
 
-                frames = 30
-                speedup_factor = 10  # Fator de aceleração
+            r = np.linalg.norm(start_vec)
 
-                for j in range(frames):
-                    alpha = j / frames
+            for j in range(frames + 1): #for de 0 até frames
+                alpha = j / frames
 
-                    x_alpha = (1 - alpha) * arrow_start.get_end()[0] + alpha * arrow_end.get_end()[0]
-                    y_alpha = (1 - alpha) * arrow_start.get_end()[1] + alpha * arrow_end.get_end()[1]
-                    z_alpha = (1 - alpha) * arrow_start.get_end()[2] + alpha * arrow_end.get_end()[2]
+                #pega os angulos do vetor inicial
+                start_theta = np.arctan2(start_vec[1], start_vec[0])
+                start_phi = np.arccos(start_vec[2] / r)
+                end_theta = np.arctan2(end_vec[1], end_vec[0])
+                end_phi = np.arccos(end_vec[2] / r)
 
-                    arrow_intermediate = Arrow3D(start=np.array([0, -4, -2]), end=np.array([x_alpha, y_alpha, z_alpha]),
-                                                 color=BLUE)
+                #incrementa do angulo em função de theta
+                theta = (1 - alpha) * start_theta + alpha * end_theta
+                phi = (1 - alpha) * start_phi + alpha * end_phi
 
-                    arrow_start.become(arrow_intermediate)
+                x_alpha = r * np.sin(phi) * np.cos(theta)
+                y_alpha = r * np.sin(phi) * np.sin(theta)
+                z_alpha = r * np.cos(phi)
 
-                    bloch_sphere.play(Transform(arrow_start, arrow_intermediate), run_time=1 / speedup_factor)
+                if j > 0:
+                    prev_x, prev_y, prev_z = vector_points[-1]
+                    line = Line([prev_x, prev_y, prev_z], [x_alpha, y_alpha, z_alpha], color=BLUE)
+                    bloch_sphere.add(line)
+
+                vector_points.append((x_alpha, y_alpha, z_alpha))
+
+                intermediate_arrow = Arrow3D(start=origin, end=np.array([x_alpha, y_alpha, z_alpha]), color=GREEN)
+
+                # Transform cria uma animação entre as posições especificadas e run_time especifica o tempo total da animação.
+                bloch_sphere.play(Transform(arrow_start, intermediate_arrow), run_time=(1 / speed))
 
         bloch_sphere.render()
