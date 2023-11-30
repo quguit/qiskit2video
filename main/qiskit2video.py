@@ -6,12 +6,13 @@ from manim import *
 import numpy as np
 import tempfile, os
     
-origin = (0, -4, -2) #variable global
+origin = np.array([0, -4, -2]) #variable global
 
 
 # Function to create a 3D arrow representing a quantum state
 def create_arrow(x, y, z):
     end = np.array([2 * x, (2 * y) - 4, (2 * z) - 2])
+
 
     # Map the phase to a color according to qiskit conventions
     # color = None
@@ -30,14 +31,13 @@ def create_arrow(x, y, z):
         resolution=8,
         color=BLUE
     )
-
     return arrow
 
 
 # Function to create a 3D sphere representing the Bloch sphere
 def create_sphere(radius):
     sphere = Sphere(
-        center=(0, -4, -2),  # Posição da esfera
+        center=origin,  # Posição da esfera
         radius=radius,
         resolution=(12, 10),
     )
@@ -193,17 +193,25 @@ class QuantumCircuit(QuantumCircuit):
         # self.add_entanglement(self.calculate_entanglement(qubit))
 
     def video(self, speed = 15, frames = 30):  # bideo, velocidade, exportação,
-        # criando uma cena 3D
-        bloch_sphere = BlochSphere()
-        # executando o construtor
-        bloch_sphere.construct()
+
+        bloch_sphere = BlochSphere()  # criando uma cena 3D
+
+        bloch_sphere.construct()    # executando o construtor
+        
         # Função que cria setas com base nas posições especificadas em sv
         arrows = [create_arrow(*position) for position in self.sv]
-        #Testando com inicialização fora do laçõ para evitar repetição
-        arrow_start = arrows[0]
-        arrow_end = arrows[1]
-        bloch_sphere.add(arrow_start)
-        # r = np.linalg.norm(arrow_start.get_end())
+
+        # inicialização fora do laçõ para evitar repetição
+        # first_vector = arrows[0]
+
+        pos_borda = np.array(self.sv[0])
+        pos_sv = ((pos_borda*2) + origin)
+        bloch_sphere.add(arrows[0])
+        bloch_sphere.wait(1)
+        # rai = np.linalg.norm(pos_borda)
+        # r = rai*2
+        vector_points = []
+
         for i, arrow in enumerate(arrows):
             # Adiciona a imagem do circuito correspondente a esta etapa
             circuit_image = self.album[i]
@@ -214,44 +222,56 @@ class QuantumCircuit(QuantumCircuit):
             # Adicione a imagem à cena como um objeto fixo na moldura
             bloch_sphere.add_fixed_in_frame_mobjects(circuit_image)
 
-            vector_points = []
+            if i + 1 < len(arrows):
 
-            # Verifique se existe um próximo vetor na lista
-            arrow_start = arrows[i]
-            arrow_end = arrows[i + 1]
+                first_vector = arrows[i]
 
-            start_vec = arrow_start.get_end()  # pega a posição final end
-            end_vec = arrow_end.get_end()  # pega a posição final end
+                pos_i = np.array(self.sv[i]) #pega o vetor [x,y,z]
+                inicio_trajeto = pos_i #((pos_i * 2) + origin)   pega a posição final end
+                pos_f = np.array(self.sv[i + 1])
+                fim_trajeto = pos_f #((pos_f * 2) + origin)  pega a posição final end
 
-            r = np.linalg.norm(start_vec)
 
-            for j in range(frames + 1): #for de 0 até frames
-                alpha = j / frames
+                r = np.linalg.norm(inicio_trajeto)
 
-                #pega os angulos do vetor inicial
-                start_theta = np.arctan2(start_vec[1], start_vec[0])
-                start_phi = np.arccos(start_vec[2] / r)
-                end_theta = np.arctan2(end_vec[1], end_vec[0])
-                end_phi = np.arccos(end_vec[2] / r)
+                for j in range(frames + 1): #for de 0 até frames
+                    alpha = j / frames
 
-                #incrementa do angulo em função de theta
-                theta = (1 - alpha) * start_theta + alpha * end_theta
-                phi = (1 - alpha) * start_phi + alpha * end_phi
+                    # Pega os ângulos do vetor inicial
+                    theta_i = np.arctan2(inicio_trajeto[1], inicio_trajeto[0])
+                    phi_i = np.arccos(inicio_trajeto[2] / np.linalg.norm(inicio_trajeto))
+                    # print(np.linalg.norm(inicio_trajeto))
+                    # Pega os ângulos do vetor final
+                    theta_f = np.arctan2(fim_trajeto[1], fim_trajeto[0])
+                    phi_f = np.arccos(fim_trajeto[2] / np.linalg.norm(fim_trajeto))
+                    # print(np.linalg.norm(fim_trajeto))
 
-                x_alpha = r * np.sin(phi) * np.cos(theta)
-                y_alpha = r * np.sin(phi) * np.sin(theta)
-                z_alpha = r * np.cos(phi)
+                    # Incrementa os ângulos em função de alpha
+                    theta = (1 - alpha) * theta_i + alpha * theta_f
+                    phi = (1 - alpha) * phi_i + alpha * phi_f
 
-                if j > 0:
-                    prev_x, prev_y, prev_z = vector_points[-1]
-                    line = Line([prev_x, prev_y, prev_z], [x_alpha, y_alpha, z_alpha], color=BLUE)
-                    bloch_sphere.add(line)
+                    x_alpha = r * np.sin(phi) * np.cos(theta)
+                    y_alpha = r * np.sin(phi) * np.sin(theta)
+                    z_alpha = r * np.cos(phi)
 
-                vector_points.append((x_alpha, y_alpha, z_alpha))
+                    x = (x_alpha * 2)
+                    y = (y_alpha * 2) - 4
+                    z = (z_alpha * 2) - 2
 
-                intermediate_arrow = Arrow3D(start=origin, end=np.array([x_alpha, y_alpha, z_alpha]), color=GREEN)
+                    if j > 0:
+                        prev_x, prev_y, prev_z = vector_points[-1]
+                        line = Line([prev_x, prev_y, prev_z], [x, y, z], color=RED)
+                        bloch_sphere.add(line)
 
-                # Transform cria uma animação entre as posições especificadas e run_time especifica o tempo total da animação.
-                bloch_sphere.play(Transform(arrow_start, intermediate_arrow), run_time=(1 / speed))
+                    vector_points.append((x, y, z))
 
+
+
+
+                    intermediate_arrow = Arrow3D(start=origin, end=np.array([x, y, z]), color=BLUE)
+
+                    # Transform cria uma animação entre as posições especificadas e run_time especifica o tempo total da animação.
+                    bloch_sphere.play(Transform(first_vector, intermediate_arrow), run_time=(1 / speed))
+
+        bloch_sphere.wait(2)
         bloch_sphere.render()
