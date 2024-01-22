@@ -165,81 +165,81 @@ class QuantumCircuit(QuantumCircuit):
         # Function that creates arrows based on the positions specified in sv
         arrows = [create_arrow(*position) for position in self.sv]
 
-        # position on the edge of the sphere
-        pos_borda = np.array(self.sv[0])
-
-        pos_sv = ((pos_borda * 2) + origin)
-
-        bloch_sphere.add(arrows[0])
-
-        bloch_sphere.wait(1) # wait 1 second
-
-        # rai = np.linalg.norm(pos_borda)
-        # r = rai*2
+        bloch_sphere.add(arrows[0])     #set the 1st vector, ket 0
+        bloch_sphere.wait(1)    # wait 1 second
 
         # list to store the trace
         vector_points = []
 
         for i, arrow in enumerate(arrows):
-            # Adiciona a imagem do circuito correspondente a esta etapa
+            # Add the image of the circuit corresponding to this step
             circuit_image = self.album[i]
 
-            # Adicione a imagem à cena
+            # Add the image to scene
             bloch_sphere.add(circuit_image)
 
-            # Adicione a imagem à cena como um objeto fixo na moldura
+            # transforms the image in the scene as a fixed object in the frame
             bloch_sphere.add_fixed_in_frame_mobjects(circuit_image)
 
             if i + 1 < len(arrows):
-
+                # 1st vector
                 first_vector = arrows[i]
+                #get the vector [x, y, z]
+                pos_i = np.array(self.sv[i])
 
-                pos_i = np.array(self.sv[i])  # pega o vetor [x,y,z]
-                inicio_trajeto = pos_i  # ((pos_i * 2) + origin)   pega a posição final end
+                # taking the coordinates for the path that the trace will follow
+                inicio_trajeto = pos_i
                 pos_f = np.array(self.sv[i + 1])
-                fim_trajeto = pos_f  # ((pos_f * 2) + origin)  pega a posição final end
+                fim_trajeto = pos_f
 
+                # value of the radius based on the coordinates, even knowing that the value is always equal to 1,
+                # the algorithm doesn't work if you use the constant r =1.
                 r = np.linalg.norm(inicio_trajeto)
 
                 for j in range(frames + 1):  # for de 0 até frames
+
                     alpha = j / frames
 
-                    # Pega os ângulos do vetor inicial
+                    # Take the angles of the initial vector
                     theta_i = np.arctan2(inicio_trajeto[1], inicio_trajeto[0])
                     phi_i = np.arccos(inicio_trajeto[2] / np.linalg.norm(inicio_trajeto))
-                    # print(np.linalg.norm(inicio_trajeto))
-                    # Pega os ângulos do vetor final
+
+
+                    # Take the angles of the final vector
                     theta_f = np.arctan2(fim_trajeto[1], fim_trajeto[0])
                     phi_f = np.arccos(fim_trajeto[2] / np.linalg.norm(fim_trajeto))
-                    # print(np.linalg.norm(fim_trajeto))
 
                     # Incrementa os ângulos em função de alpha
                     theta = (1 - alpha) * theta_i + alpha * theta_f
                     phi = (1 - alpha) * phi_i + alpha * phi_f
 
+                    # converting to polar
                     x_alpha = r * np.sin(phi) * np.cos(theta)
                     y_alpha = r * np.sin(phi) * np.sin(theta)
                     z_alpha = r * np.cos(phi)
 
+                    # moving the axes from (0,0,0) for ( 0,-4,-2)
                     x = (x_alpha * 2)
                     y = (y_alpha * 2) - 4
                     z = (z_alpha * 2) - 2
 
+                    # this section is responsible for the path trace
                     if j > 0:
                         prev_x, prev_y, prev_z = vector_points[-1]
                         line = Line([prev_x, prev_y, prev_z], [x, y, z], color=RED)
                         bloch_sphere.add(line)
-
+                    # apply the list so that the line knows where it left off
                     vector_points.append((x, y, z))
 
+                    # this is the next position of the vector
                     intermediate_arrow = Arrow3D(start=origin, end=np.array([x, y, z]), color=BLUE)
 
-                    # Transform cria uma animação entre as posições especificadas e run_time especifica o tempo total da animação.
+                    # apply the transformation to the next coordinate in the loop and run_time specifies the total time of the animation.
                     bloch_sphere.play(Transform(first_vector, intermediate_arrow), run_time=(1 / speed))
 
+        #wait 2 seconds and start scene
         bloch_sphere.wait(2)
         bloch_sphere.render()
-
 
 
     #you need to do these 3 steps for the logic gate to work,
