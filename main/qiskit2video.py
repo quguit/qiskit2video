@@ -1,4 +1,3 @@
-from qiskit.quantum_info import entropy
 from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit, Aer, execute, BasicAer, transpile, assemble
 from numpy import pi
 from qiskit.visualization import circuit_drawer
@@ -6,13 +5,14 @@ from manim import *
 import numpy as np
 import tempfile, os
     
-origin = np.array([0, -4, -2]) #variable global
+origin = np.array([0, -4, -2]) # variable global, will be the origin of the bloch sphere
 
 
 # Function to create a 3D arrow representing a quantum state
 def create_arrow(x, y, z):
-    end = np.array([2 * x, (2 * y) - 4, (2 * z) - 2])
 
+    #translating the axis to a global variable
+    end = np.array([2 * x, (2 * y) - 4, (2 * z) - 2])
 
     # Map the phase to a color according to qiskit conventions
     # color = None
@@ -37,18 +37,17 @@ def create_arrow(x, y, z):
 # Function to create a 3D sphere representing the Bloch sphere
 def create_sphere(radius):
     sphere = Sphere(
-        center=origin,  # Posição da esfera
+        center=origin,  # Position of the sphere
         radius=radius,
         resolution=(12, 10),
     )
-    sphere.set_fill(WHITE, 0.01)
-    sphere.set_stroke(width=1)
+    sphere.set_fill(WHITE, 0.01) # sets the fill color of this circle to blue (WHITE, set in constants), and the fill transparency to 0.01.
+    sphere.set_stroke(WHITE, width=1) # sets the stroke color of this circle to WHITE (defined in constants), and the stroke width to 1.
     return sphere
 
 
 # Function to create 3D axes for visualization
 def create_axes(radius):
-    # Calculate the lengths of the axes based on the sphere's radius
 
     axis_lengths = (radius*3)   # Set axis lengths to be twice the radius
 
@@ -67,149 +66,118 @@ def create_axes(radius):
 # Main scene class to visualize the Bloch sphere and quantum states
 class BlochSphere(ThreeDScene):
 
-    def construct(self):
-        radius = 2
-        # Position the sphere at the center of the space
-        sphere = create_sphere(radius)
+    def construct(self):    # declaring only what should be started with the constructor
 
+        # setting the radius of the vector for demonstration purposes, in practice the radius is always constant at 1.
+        radius = 2
+
+        # create the sphere and axes
+        sphere = create_sphere(radius)
         axes = create_axes(radius)
 
-        # Labels for quantum states
+        # Labels for scene
         ket0 = axes.get_z_axis_label(Tex(r"$| 0 \rangle$")).rotate(0, axis=LEFT).next_to(axes.z_axis, 1.0)
         ket1 = axes.get_z_axis_label(Tex(r"$| 1 \rangle$")).next_to(axes.z_axis, -2.0).rotate(135, Z_AXIS)
         ketX = axes.get_x_axis_label(Tex(r"$| + \rangle$")).next_to(axes.x_axis, 2.5).rotate(-10, axis=RIGHT)
-        # ketY = axes.get_y_axis_label(Tex(r"$| - \rangle$")).next_to(axes.y_axis, 5).rotate(70, axis=UP)
 
-        # Add objects (axes, sphere, labels) to the scene
+        # Add mobjects (axes, sphere, labels) to the scene
         self.add(axes, sphere, ket0, ket1, ketX)
 
-        # Configuração da câmera
-        #self.set_camera_orientation(phi=pi / 2.5, theta=pi / 4, zoom=1.1)
+        # Camera setup, i.e. the user's view
         self.set_camera_orientation(phi=60 * DEGREES, theta=45 * DEGREES)
 
-        # self.play(FadeIn(sphere))
-        # self.wait(5)
-
-
+# Receives alpha and beta from the qubit and transforms it into a polar representation
 def rect2pol(alpha, beta):
-    # Calcular coordenadas polares
+    # Calculating polar coordinates
     r = np.sqrt(abs(alpha) ** 2 + abs(beta) ** 2)
     theta = 2 * np.arccos(alpha.real / r)
     phi = np.angle(beta)
 
-    # Converter ângulo phi de [-π, π] para [0, 2π]
+    # Convert phi angle from [-π, π] to [0, 2π]
     if phi < 0:
         phi += 2 * np.pi
     return theta, phi
 
-
+#simulates the circuit at that moment, used to obtain the quantum state (alpha and beta), in case of doubt consult the API on qiskit
 def simulator(circuit):
     backend = Aer.get_backend('statevector_simulator')
     job = execute(circuit, backend)
     result = job.result()
-    # Representaçã odo vetor no espaço de hilbert de 2 dimenções
+
+    # Vector representation in 2-dimensional Hilbert space
     vector = result.get_statevector(circuit)
+    # get alpha and beta to obtain the polar representation
     theta, phi = rect2pol(vector[0], vector[1])
 
+    # calculating the Cartesian representation in 3D
     x = 1 * np.sin(theta) * np.cos(phi)
     y = 1 * np.sin(theta) * np.sin(phi)
     z = 1 * np.cos(theta)
 
     return [x, y, z]
 
-
+# function that generates the circuit drawing
 def generate_circuit_image(circuit):
-    # Gere a representação visual do circuito usando 'mpl' do Qiskit
+
+    # Generate the visual representation of the circuit using 'mpl' from Qiskit
     temp_dir = tempfile.gettempdir()  # Diretório temporário para salvar a imagem
     image_path = os.path.join(temp_dir, "quantum_circuit.png")
     circuit_drawer(circuit, output='mpl', filename=image_path)
 
-    # Carregue a imagem gerada usando Manim
+    # Loads the image generated using Manim
     circuit_image = ImageMobject(image_path)
 
-    # Dimensione a imagem como desejado
+    # Sizing up
     circuit_image.scale(1.2)
 
-    # Posicione a imagem no canto superior esquerdo
+    # Position the image in the top left corner
     circuit_image.to_corner(UL)
 
     return circuit_image
 
 
-# classe personalizada que herda de QuantumCircuit
+# custom class inheriting from QuantumCircuit
 class QuantumCircuit(QuantumCircuit):
     def __init__(self, qreg_q, *args, **kwargs):
         super().__init__(qreg_q, *args, **kwargs)
-        self.sv = []  # lista de posições
-        self.arrows = []  # lista de vetores criados Arrow3D
+
+        # list of vector positions on the sphere
+        self.sv = []
+
+        # list of vectors created by Arrow3D from positions
+        self.arrows = []
+
+        # simulating the circuit and getting the position of the state vector at that instant
         self.sv.append(simulator(self))
+
+        # list of images synchronized with the vectors and changes in the circuit
         self.album = []
+
+        # upload the image to manim and add the scene
         self.album.append(generate_circuit_image(self))
 
-    # método personalizado para a operação X
-    def x(self, qubit, **kwargs):
-        super().x(qubit)
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
+    def video(self, speed=15, frames=30):  # self, velocidade, passos,
+        # creating a 3D scene
+        bloch_sphere = BlochSphere()
+        # starting the constructor
+        bloch_sphere.construct()
 
-    # método personalizado para a operação Pauli y
-    def y(self, qubit):
-        super().y(qubit)
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-
-    # método personalizado para a operação s
-    def s(self, qubit):
-        super().s(qubit)
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-        # self.add_entanglement(qubit)
-
-    # método personalizado para a operação Pauli-z
-    def z(self, qubit):
-        super().z(qubit)
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-        # self.add_entanglement(qubit)
-
-    # método personalizado para a operação t
-    def t(self, qubit):
-        super().t(qubit)
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-
-    # método personalizado para a operação H
-    def h(self, qubit):
-        super().h(qubit)
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-        # self.add_entanglement(self.calculate_entanglement(qubit))
-
-    # método personalizado para a operação U
-    def u(self, theta1, theta2, theta3, qubit):
-        super().u(theta1, theta2, theta3, qubit)
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-        # self.add_entanglement(self.calculate_entanglement(qubit))
-
-    def video(self, speed = 15, frames = 30):  # bideo, velocidade, exportação,
-
-        bloch_sphere = BlochSphere()  # criando uma cena 3D
-
-        bloch_sphere.construct()    # executando o construtor
-        
-        # Função que cria setas com base nas posições especificadas em sv
+        # Function that creates arrows based on the positions specified in sv
         arrows = [create_arrow(*position) for position in self.sv]
 
-        # inicialização fora do laçõ para evitar repetição
-        # first_vector = arrows[0]
-
+        # position on the edge of the sphere
         pos_borda = np.array(self.sv[0])
-        pos_sv = ((pos_borda*2) + origin)
+
+        pos_sv = ((pos_borda * 2) + origin)
+
         bloch_sphere.add(arrows[0])
-        bloch_sphere.wait(1)
+
+        bloch_sphere.wait(1) # wait 1 second
+
         # rai = np.linalg.norm(pos_borda)
         # r = rai*2
+
+        # list to store the trace
         vector_points = []
 
         for i, arrow in enumerate(arrows):
@@ -226,15 +194,14 @@ class QuantumCircuit(QuantumCircuit):
 
                 first_vector = arrows[i]
 
-                pos_i = np.array(self.sv[i]) #pega o vetor [x,y,z]
-                inicio_trajeto = pos_i #((pos_i * 2) + origin)   pega a posição final end
+                pos_i = np.array(self.sv[i])  # pega o vetor [x,y,z]
+                inicio_trajeto = pos_i  # ((pos_i * 2) + origin)   pega a posição final end
                 pos_f = np.array(self.sv[i + 1])
-                fim_trajeto = pos_f #((pos_f * 2) + origin)  pega a posição final end
-
+                fim_trajeto = pos_f  # ((pos_f * 2) + origin)  pega a posição final end
 
                 r = np.linalg.norm(inicio_trajeto)
 
-                for j in range(frames + 1): #for de 0 até frames
+                for j in range(frames + 1):  # for de 0 até frames
                     alpha = j / frames
 
                     # Pega os ângulos do vetor inicial
@@ -265,9 +232,6 @@ class QuantumCircuit(QuantumCircuit):
 
                     vector_points.append((x, y, z))
 
-
-
-
                     intermediate_arrow = Arrow3D(start=origin, end=np.array([x, y, z]), color=BLUE)
 
                     # Transform cria uma animação entre as posições especificadas e run_time especifica o tempo total da animação.
@@ -275,3 +239,54 @@ class QuantumCircuit(QuantumCircuit):
 
         bloch_sphere.wait(2)
         bloch_sphere.render()
+
+
+
+    #you need to do these 3 steps for the logic gate to work,
+    # 1st send the qubit to the parent class,
+    # 2nd apply the list of positions by calling the simulator to pick the position at that moment,
+    # 3rd generate the image and add it to the circuit.
+
+    # custom method for the operation X
+    def x(self, qubit, **kwargs):
+        super().x(qubit)
+        self.sv.append(simulator(self))
+        self.album.append(generate_circuit_image(self))
+
+    # custom method for the Pauli-Y gate
+    def y(self, qubit):
+        super().y(qubit)
+        self.sv.append(simulator(self))
+        self.album.append(generate_circuit_image(self))
+
+    # custom method for the operation s
+    def s(self, qubit):
+        super().s(qubit)
+        self.sv.append(simulator(self))
+        self.album.append(generate_circuit_image(self))
+
+    # custom method for the operation Pauli-z
+    def z(self, qubit):
+        super().z(qubit)
+        self.sv.append(simulator(self))
+        self.album.append(generate_circuit_image(self))
+
+    # custom method for the operation t
+    def t(self, qubit):
+        super().t(qubit)
+        self.sv.append(simulator(self))
+        self.album.append(generate_circuit_image(self))
+
+    # custom method for the operation H
+    def h(self, qubit):
+        super().h(qubit)
+        self.sv.append(simulator(self))
+        self.album.append(generate_circuit_image(self))
+
+    # custom method for the operation U
+    def u(self, theta1, theta2, theta3, qubit):
+        super().u(theta1, theta2, theta3, qubit)
+        self.sv.append(simulator(self))
+        self.album.append(generate_circuit_image(self))
+
+
