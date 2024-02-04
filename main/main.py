@@ -9,19 +9,25 @@ circuit = QuantumCircuit(qreg_q, creg_c)    # creating a Quantum circuit
 
 # by default the qubit starts at ket 0 or state zero
 
+circuit.h(qreg_q[0])        # applying the Haddamard gatw
+
+circuit.h(qreg_q[0])        # applying again Haddamard gate
+
 circuit.x(qreg_q[0])        # applying the Pauli-X gate
 
 circuit.h(qreg_q[0])        # applying the Haddamard gatw
 
 circuit.h(qreg_q[0])        # applying again Haddamard gate
 
-circuit.z(qreg_q[0])        # apllying the Pauli-Z gate
+# circuit.x(qreg_q[0])        # apllying the Pauli-X gate
+#
+# circuit.z(qreg_q[0])        # apllying the Pauli-Z gate
+#
+# circuit.y(qreg_q[0])        # apllying the Pauli-Y gate
+#
+# circuit.y(qreg_q[0])        # apllying the Pauli-Y gate
 
-circuit.h(qreg_q[0])        # apllying the Haddamard gate
 
-circuit.y(qreg_q[0])        # apllying the Pauli-Y gate
 
-circuit.x(qreg_q[0])        # apllying the Pauli-X gate
-
-circuit.video(15, 30)   # create the animation of scene,passing the parameters transition speed and frames respectively
+circuit.video(25, 60)   # create the animation of scene,passing the parameters transition speed and frames respectively
 

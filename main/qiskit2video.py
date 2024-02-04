@@ -135,7 +135,6 @@ def generate_circuit_image(circuit):
 
     return circuit_image
 
-
 # custom class inheriting from QuantumCircuit
 class QuantumCircuit(QuantumCircuit):
     def __init__(self, qreg_q, *args, **kwargs):
@@ -155,6 +154,9 @@ class QuantumCircuit(QuantumCircuit):
 
         # upload the image to manim and add the scene
         self.album.append(generate_circuit_image(self))
+
+        # variable for control the trajectory
+        self.gates = []
 
     def video(self, speed=15, frames=30):  # self, velocidade, passos,
         # creating a 3D scene
@@ -196,27 +198,55 @@ class QuantumCircuit(QuantumCircuit):
                 # the algorithm doesn't work if you use the constant r =1.
                 r = np.linalg.norm(inicio_trajeto)
 
+                # Take the angles of the initial vector and convert radians for degrees
+                phi_i = np.rad2deg(np.arctan2(inicio_trajeto[1], inicio_trajeto[0]))
+                theta_i = np.rad2deg(np.arccos(inicio_trajeto[2] / np.linalg.norm(inicio_trajeto)))
+                print("----------------------------------------")
+                print("theta_i", theta_i)
+                print("phi_i", phi_i)
+                # Take the angles of the final vector
+                phi_f = np.rad2deg(np.arctan2(fim_trajeto[1], fim_trajeto[0]))
+                theta_f = np.rad2deg(np.arccos(fim_trajeto[2] / np.linalg.norm(fim_trajeto)))
+                print("theta_f", theta_f)
+                print("phi_f", phi_f)
+
+                if self.gates[i] == 'h':
+                    if theta_i == 0:
+                        phi_i = -90
+                    elif theta_i == 90:
+                        if phi_i == 180:
+                            phi_i = -180
+                            phi_f = -90
+                        else:
+                            phi_f = +90
+                    elif theta_i == 180:
+                        phi_i = +90
+
+                # elif self.gates[i] == 'z':
+                #     phi = phi
+                # elif self.gates[i] == 'y':
+                #     phi = -1*phi
+                elif self.gates[i] == 'x':
+                    if theta_i == 0:
+                        phi_i = phi_f = -90
+                    else:
+                        phi_i = phi_f = +90
+
                 for j in range(frames + 1):  # for de 0 até frames
 
                     alpha = j / frames
 
-                    # Take the angles of the initial vector
-                    theta_i = np.arctan2(inicio_trajeto[1], inicio_trajeto[0])
-                    phi_i = np.arccos(inicio_trajeto[2] / np.linalg.norm(inicio_trajeto))
-
-
-                    # Take the angles of the final vector
-                    theta_f = np.arctan2(fim_trajeto[1], fim_trajeto[0])
-                    phi_f = np.arccos(fim_trajeto[2] / np.linalg.norm(fim_trajeto))
-
-                    # Incrementa os ângulos em função de alpha
+                    # Interpolate angles
                     theta = (1 - alpha) * theta_i + alpha * theta_f
                     phi = (1 - alpha) * phi_i + alpha * phi_f
 
+                    print("theta", theta)
+                    print("phi", phi)
+
                     # converting to polar
-                    x_alpha = r * np.sin(phi) * np.cos(theta)
-                    y_alpha = r * np.sin(phi) * np.sin(theta)
-                    z_alpha = r * np.cos(phi)
+                    x_alpha = r * np.sin(np.deg2rad(theta)) * np.cos(np.deg2rad(phi))
+                    y_alpha = r * np.sin(np.deg2rad(theta)) * np.sin(np.deg2rad(phi))
+                    z_alpha = r * np.cos(np.deg2rad(theta))
 
                     # moving the axes from (0,0,0) for ( 0,-4,-2)
                     x = (x_alpha * 2)
@@ -248,45 +278,45 @@ class QuantumCircuit(QuantumCircuit):
     # 3rd generate the image and add it to the circuit.
 
     # custom method for the operation X
-    def x(self, qubit, **kwargs):
+    def x(self, qubit):
         super().x(qubit)
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
-
+        self.gates.append('x')
     # custom method for the Pauli-Y gate
     def y(self, qubit):
         super().y(qubit)
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
-
+        self.gates.append('y')
     # custom method for the operation s
     def s(self, qubit):
         super().s(qubit)
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
-
+        self.gates.append('s')
     # custom method for the operation Pauli-z
     def z(self, qubit):
         super().z(qubit)
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
-
+        self.gates.append('z')
     # custom method for the operation t
     def t(self, qubit):
         super().t(qubit)
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
-
+        self.gates.append('t')
     # custom method for the operation H
     def h(self, qubit):
         super().h(qubit)
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
-
+        self.gates.append('h')
     # custom method for the operation U
     def u(self, theta1, theta2, theta3, qubit):
         super().u(theta1, theta2, theta3, qubit)
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
-
+        self.gates.append('u')
 
