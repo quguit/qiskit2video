@@ -139,7 +139,9 @@ def generate_circuit_image(circuit):
 class QuantumCircuit(QuantumCircuit):
     def __init__(self, qreg_q, *args, **kwargs):
         super().__init__(qreg_q, *args, **kwargs)
-
+        print("Quantidade de qubits recebidos: ", qreg_q  )
+        i = qreg_q
+        print(i)
         # list of vector positions on the sphere
         self.sv = []
 
@@ -194,82 +196,92 @@ class QuantumCircuit(QuantumCircuit):
                 pos_f = np.array(self.sv[i + 1])
                 fim_trajeto = pos_f
 
-                # value of the radius based on the coordinates, even knowing that the value is always equal to 1,
-                # the algorithm doesn't work if you use the constant r =1.
-                r = np.linalg.norm(inicio_trajeto)
-
-                # Take the angles of the initial vector and convert radians for degrees
-                phi_i = np.rad2deg(np.arctan2(inicio_trajeto[1], inicio_trajeto[0]))
-                theta_i = np.rad2deg(np.arccos(inicio_trajeto[2] / np.linalg.norm(inicio_trajeto)))
-                print("----------------------------------------")
-                print("theta_i", theta_i)
-                print("phi_i", phi_i)
-                # Take the angles of the final vector
-                phi_f = np.rad2deg(np.arctan2(fim_trajeto[1], fim_trajeto[0]))
-                theta_f = np.rad2deg(np.arccos(fim_trajeto[2] / np.linalg.norm(fim_trajeto)))
-                print("theta_f", theta_f)
-                print("phi_f", phi_f)
-
-                if self.gates[i] == 'h':
-                    if theta_i == 0:
-                        phi_i = -90
-                    elif theta_i == 90:
-                        if phi_i == 180:
-                            phi_i = -180
-                            phi_f = -90
-                        else:
-                            phi_f = +90
-                    elif theta_i == 180:
-                        phi_i = +90
-
-                # elif self.gates[i] == 'z':
-                #     phi = phi
-                # elif self.gates[i] == 'y':
-                #     phi = -1*phi
-                elif self.gates[i] == 'x':
-                    if theta_i == 0:
-                        phi_i = phi_f = -90
-                    else:
-                        phi_i = phi_f = +90
-
-                for j in range(frames + 1):  # for de 0 até frames
-
-                    alpha = j / frames
-
-                    # Interpolate angles
-                    theta = (1 - alpha) * theta_i + alpha * theta_f
-                    phi = (1 - alpha) * phi_i + alpha * phi_f
-
-                    print("theta", theta)
-                    print("phi", phi)
-
-                    # converting to polar
-                    x_alpha = r * np.sin(np.deg2rad(theta)) * np.cos(np.deg2rad(phi))
-                    y_alpha = r * np.sin(np.deg2rad(theta)) * np.sin(np.deg2rad(phi))
-                    z_alpha = r * np.cos(np.deg2rad(theta))
-
-                    # moving the axes from (0,0,0) for ( 0,-4,-2)
-                    x = (x_alpha * 2)
-                    y = (y_alpha * 2) - 4
-                    z = (z_alpha * 2) - 2
-
-                    # this section is responsible for the path trace
-                    if j > 0:
-                        prev_x, prev_y, prev_z = vector_points[-1]
-                        line = Line([prev_x, prev_y, prev_z], [x, y, z], color=RED)
-                        bloch_sphere.add(line)
-                    # apply the list so that the line knows where it left off
-                    vector_points.append((x, y, z))
-
-                    # this is the next position of the vector
-                    intermediate_arrow = Arrow3D(start=origin, end=np.array([x, y, z]), color=BLUE)
-
-                    # apply the transformation to the next coordinate in the loop and run_time specifies the total time of the animation.
-                    bloch_sphere.play(Transform(first_vector, intermediate_arrow), run_time=(1 / speed))
-
-        #wait 2 seconds and start scene
-        bloch_sphere.wait(2)
-        bloch_sphere.render()
+        #         # value of the radius based on the coordinates, even knowing that the value is always equal to 1,
+        #         # the algorithm doesn't work if you use the constant r =1.
+        #         r = np.linalg.norm(inicio_trajeto)
+        #
+        #         # Take the angles of the initial vector and convert radians for degrees
+        #         phi_i = np.rad2deg(np.arctan2(inicio_trajeto[1], inicio_trajeto[0]))
+        #         theta_i = np.rad2deg(np.arccos(inicio_trajeto[2] / np.linalg.norm(inicio_trajeto)))
+        #         print("----------------------------------------")
+        #         print("theta_i", theta_i)
+        #         print("phi_i", phi_i)
+        #         # Take the angles of the final vector
+        #         phi_f = np.rad2deg(np.arctan2(fim_trajeto[1], fim_trajeto[0]))
+        #         theta_f = np.rad2deg(np.arccos(fim_trajeto[2] / np.linalg.norm(fim_trajeto)))
+        #         print("theta_f", theta_f)
+        #         print("phi_f", phi_f)
+        #
+        #         if self.gates[i] == 'h':
+        #             if theta_i == 0:
+        #                 phi_i = -90
+        #             elif theta_i == 90:
+        #                 if phi_i == 180:
+        #                     phi_i = -180
+        #                     phi_f = -90
+        #                 else:
+        #                     phi_f = +90
+        #             elif theta_i == 180:
+        #                 phi_i = +90
+        #
+        #         elif self.gates[i] == 'z':
+        #             theta_i = theta_f = 90
+        #         # elif self.gates[i] == 'y':
+        #         #
+        #         elif self.gates[i] == 'x':
+        #             if theta_i == 0:
+        #                 phi_i = phi_f = -90
+        #             elif theta_i == 180:
+        #                 phi_i = phi_f = +90
+        #                 theta_f = 0
+        #         elif self.gates[i] == 's':
+        #             phi_i = phi_f = 90
+        #
+        #
+        #         for j in range(frames + 1):  # for de 0 até frames
+        #
+        #             alpha = j / frames
+        #
+        #             # Interpolate angles
+        #             theta = (1 - alpha) * theta_i + alpha * theta_f
+        #             phi = (1 - alpha) * phi_i + alpha * phi_f
+        #
+        #             if self.gates[i] == 'y':
+        #                 if theta < 180:
+        #                     phi_f = 0
+        #                 else:
+        #                     phi_f = 180
+        #                     theta_f = 90
+        #             print("theta", theta)
+        #             print("phi", phi)
+        #
+        #             # converting to polar
+        #             x_alpha = r * np.sin(np.deg2rad(theta)) * np.cos(np.deg2rad(phi))
+        #             y_alpha = r * np.sin(np.deg2rad(theta)) * np.sin(np.deg2rad(phi))
+        #             z_alpha = r * np.cos(np.deg2rad(theta))
+        #
+        #             # moving the axes from (0,0,0) for ( 0,-4,-2)
+        #             x = (x_alpha * 2)
+        #             y = (y_alpha * 2) - 4
+        #             z = (z_alpha * 2) - 2
+        #
+        #             # this section is responsible for the path trace
+        #             if j > 0:
+        #                 prev_x, prev_y, prev_z = vector_points[-1]
+        #                 line = Line([prev_x, prev_y, prev_z], [x, y, z], color=RED)
+        #                 bloch_sphere.add(line)
+        #             # apply the list so that the line knows where it left off
+        #             vector_points.append((x, y, z))
+        #
+        #             # this is the next position of the vector
+        #             intermediate_arrow = Arrow3D(start=origin, end=np.array([x, y, z]), color=BLUE)
+        #
+        #             # apply the transformation to the next coordinate in the loop and run_time specifies the total time of the animation.
+        #             bloch_sphere.play(Transform(first_vector, intermediate_arrow), run_time=(1 / speed))
+        #
+        # #wait 2 seconds and start scene
+        # bloch_sphere.wait(1)
+        # bloch_sphere.render()
 
 
     #you need to do these 3 steps for the logic gate to work,
@@ -277,42 +289,67 @@ class QuantumCircuit(QuantumCircuit):
     # 2nd apply the list of positions by calling the simulator to pick the position at that moment,
     # 3rd generate the image and add it to the circuit.
 
+    # custom method for the operation H
+    def h(self, qubit):
+        super().h(qubit)
+
+        print('____________Haddamard_____________')
+        print('H:   ', self, qubit)
+        print(qubit.index) # get the index of qubit
+        self.sv.append(simulator(self))
+        self.album.append(generate_circuit_image(self))
+        self.gates.append('h')
     # custom method for the operation X
     def x(self, qubit):
         super().x(qubit)
+
+        print('____________pauli-X_____________')
+        print('X:   ',self, qubit)
+        print(qubit.index) # get the index of qubit
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
         self.gates.append('x')
     # custom method for the Pauli-Y gate
     def y(self, qubit):
         super().y(qubit)
+
+        print('____________pauli-Y_____________')
+        print('Y:   ', self, qubit)
+        print(qubit.index)  # get the index of qubit
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
         self.gates.append('y')
     # custom method for the operation s
     def s(self, qubit):
         super().s(qubit)
+
+        print('____________pauli-S_____________')
+        print('S:   ', self, qubit)
+        print(qubit.index)  # get the index of qubit
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
         self.gates.append('s')
     # custom method for the operation Pauli-z
     def z(self, qubit):
         super().z(qubit)
+
+        print('____________pauli-Z_____________')
+        print('Z:   ', self, qubit)
+        print(qubit.index)  # get the index of qubit
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
         self.gates.append('z')
     # custom method for the operation t
     def t(self, qubit):
         super().t(qubit)
+
+        print('____________T_____________')
+        print('T:   ', self, qubit)
+        print(qubit.index)  # get the index of qubit
         self.sv.append(simulator(self))
         self.album.append(generate_circuit_image(self))
         self.gates.append('t')
-    # custom method for the operation H
-    def h(self, qubit):
-        super().h(qubit)
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-        self.gates.append('h')
+
     # custom method for the operation U
     def u(self, theta1, theta2, theta3, qubit):
         super().u(theta1, theta2, theta3, qubit)
