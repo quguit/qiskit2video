@@ -139,9 +139,10 @@ def generate_circuit_image(circuit):
 class QuantumCircuit(QuantumCircuit):
     def __init__(self, qreg_q, *args, **kwargs):
         super().__init__(qreg_q, *args, **kwargs)
-        print("Quantidade de qubits recebidos: ", qreg_q  )
-        i = qreg_q
-        print(i)
+        print("Quantidade de qubits recebidos: ", QuantumCircuit.size(self=qreg_q))
+        # i = QuantumCircuit.size(self).real
+        # print("__________________________________")
+        # print(i)
         # list of vector positions on the sphere
         self.sv = []
 
