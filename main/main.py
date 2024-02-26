@@ -8,12 +8,12 @@ creg_c = ClassicalRegister(0, 'c')          # and zero classic registers
 circuit = QuantumCircuit(qreg_q, creg_c)    # creating a Quantum circuit
 
 # by default the qubit starts at ket 0 or state zero
-#
-# circuit.h(qreg_q[0])        # applying the Haddamard gatw
-#
-# circuit.h(qreg_q[1])        # applying again Haddamard gate
-#
-# circuit.x(qreg_q[2])        # applying the Pauli-X gate
+
+circuit.x(qreg_q[0])        # applying the Haddamard gatw
+
+circuit.h(qreg_q[1])        # applying again Haddamard gate
+
+circuit.x(qreg_q[2])        # applying the Pauli-X gate
 #
 # circuit.h(qreg_q[0])        # applying the Haddamard gatw
 #

@@ -1,4 +1,5 @@
 from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit, Aer, execute, BasicAer, transpile, assemble
+from qiskit.utils import state_to_amplitudes_dict
 from numpy import pi
 from qiskit.visualization import circuit_drawer
 from manim import *
@@ -84,7 +85,8 @@ class BlochSphere(ThreeDScene):
         self.add(axes, sphere, ket0, ket1, ketX)
 
         # Camera setup, i.e. the user's view
-        self.set_camera_orientation(phi=60 * DEGREES, theta=45 * DEGREES)
+        self.set_camera_orientation( theta=135 * DEGREES, phi=60 * DEGREES, gamma=0 * DEGREES)
+
 
 # Receives alpha and beta from the qubit and transforms it into a polar representation
 def rect2pol(alpha, beta):
@@ -114,6 +116,15 @@ def simulator(circuit):
     y = 1 * np.sin(theta) * np.sin(phi)
     z = 1 * np.cos(theta)
 
+    # Convertendo o vetor de estado para um dicionário de amplitudes
+    amplitudes_dict = state_to_amplitudes_dict(vector)
+
+    # A fase é a chave 'phase' no dicionário de amplitudes
+    phase = amplitudes_dict['phase']
+
+    # Agora você pode usar a fase conforme necessário
+    print("Fase do estado quântico:", phase)
+
     return [x, y, z]
 
 # function that generates the circuit drawing
@@ -139,29 +150,22 @@ def generate_circuit_image(circuit):
 class QuantumCircuit(QuantumCircuit):
     def __init__(self, qreg_q, *args, **kwargs):
         super().__init__(qreg_q, *args, **kwargs)
-        print("Quantidade de qubits recebidos: ", QuantumCircuit.size(self=qreg_q))
-        # i = QuantumCircuit.size(self).real
-        # print("__________________________________")
-        # print(i)
-        # list of vector positions on the sphere
-        self.sv = []
+        nu_qubits = self.num_qubits
 
-        # list of vectors created by Arrow3D from positions
-        self.arrows = []
+        self.sv = [[] for _ in range(nu_qubits)]
+        self.arrows = [[] for _ in range(nu_qubits)]        # list of vectors created by Arrow3D from positions
+        self.album = [[] for _ in range(nu_qubits)]
 
-        # simulating the circuit and getting the position of the state vector at that instant
-        self.sv.append(simulator(self))
+        for i in range(nu_qubits):
+            # simulating the circuit and getting the position of the state vector at that instant
+            self.sv[i].append(simulator(self))
 
-        # list of images synchronized with the vectors and changes in the circuit
-        self.album = []
+            # list of images synchronized with the vectors and changes in the circuit
+            self.album[i].append(generate_circuit_image(self))
 
-        # upload the image to manim and add the scene
-        self.album.append(generate_circuit_image(self))
 
-        # variable for control the trajectory
-        self.gates = []
+    def video(self, speed=15, frames=30):  # self, velocidade, passos
 
-    def video(self, speed=15, frames=30):  # self, velocidade, passos,
         # creating a 3D scene
         bloch_sphere = BlochSphere()
         # starting the constructor
@@ -293,68 +297,58 @@ class QuantumCircuit(QuantumCircuit):
     # custom method for the operation H
     def h(self, qubit):
         super().h(qubit)
+        indic_qubit = qubit.index
+        # Apply modifications to the correct index
+        self.sv[indic_qubit].append(simulator(self))
+        self.album[indic_qubit].append(generate_circuit_image(self))
 
-        print('____________Haddamard_____________')
-        print('H:   ', self, qubit)
-        print(qubit.index) # get the index of qubit
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-        self.gates.append('h')
     # custom method for the operation X
     def x(self, qubit):
         super().x(qubit)
+        indic_qubit = qubit.index
+        # Apply modifications to the correct index
+        self.sv[indic_qubit].append(simulator(self))
+        self.album[indic_qubit].append(generate_circuit_image(self))
 
-        print('____________pauli-X_____________')
-        print('X:   ',self, qubit)
-        print(qubit.index) # get the index of qubit
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-        self.gates.append('x')
     # custom method for the Pauli-Y gate
     def y(self, qubit):
         super().y(qubit)
+        indic_qubit = qubit.index
+        # Apply modifications to the correct index
+        self.sv[indic_qubit].append(simulator(self))
+        self.album[indic_qubit].append(generate_circuit_image(self))
 
-        print('____________pauli-Y_____________')
-        print('Y:   ', self, qubit)
-        print(qubit.index)  # get the index of qubit
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-        self.gates.append('y')
     # custom method for the operation s
     def s(self, qubit):
         super().s(qubit)
+        indic_qubit = qubit.index
+        # Apply modifications to the correct index
+        self.sv[indic_qubit].append(simulator(self))
+        self.album[indic_qubit].append(generate_circuit_image(self))
 
-        print('____________pauli-S_____________')
-        print('S:   ', self, qubit)
-        print(qubit.index)  # get the index of qubit
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-        self.gates.append('s')
     # custom method for the operation Pauli-z
     def z(self, qubit):
         super().z(qubit)
+        indic_qubit = qubit.index
+        # Apply modifications to the correct index
+        self.sv[indic_qubit].append(simulator(self))
+        self.album[indic_qubit].append(generate_circuit_image(self))
 
-        print('____________pauli-Z_____________')
-        print('Z:   ', self, qubit)
-        print(qubit.index)  # get the index of qubit
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-        self.gates.append('z')
     # custom method for the operation t
     def t(self, qubit):
         super().t(qubit)
-
-        print('____________T_____________')
-        print('T:   ', self, qubit)
-        print(qubit.index)  # get the index of qubit
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-        self.gates.append('t')
+        indic_qubit = qubit.index
+        # Apply modifications to the correct index
+        self.sv[indic_qubit].append(simulator(self))
+        self.album[indic_qubit].append(generate_circuit_image(self))
 
     # custom method for the operation U
     def u(self, theta1, theta2, theta3, qubit):
         super().u(theta1, theta2, theta3, qubit)
-        self.sv.append(simulator(self))
-        self.album.append(generate_circuit_image(self))
-        self.gates.append('u')
+        indic_qubit = qubit.index
+        # Apply modifications to the correct index
+        self.sv[indic_qubit].append(simulator(self))
+        self.album[indic_qubit].append(generate_circuit_image(self))
+
+
 
