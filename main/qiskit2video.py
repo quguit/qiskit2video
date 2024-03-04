@@ -1,6 +1,4 @@
 from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit, Aer, execute, BasicAer, transpile, assemble
-from qiskit.utils import state_to_amplitudes_dict
-from numpy import pi
 from qiskit.visualization import circuit_drawer
 from manim import *
 import numpy as np
@@ -36,9 +34,9 @@ def create_arrow(x, y, z):
 
 
 # Function to create a 3D sphere representing the Bloch sphere
-def create_sphere(radius):
+def create_sphere(self: object, radius: int, position: float) -> object:
     sphere = Sphere(
-        center=origin,  # Position of the sphere
+        center=position,  # Position of the sphere
         radius=radius,
         resolution=(12, 10),
     )
@@ -48,7 +46,7 @@ def create_sphere(radius):
 
 
 # Function to create 3D axes for visualization
-def create_axes(radius):
+def create_axes(self, radius, position):
 
     axis_lengths = (radius*3)   # Set axis lengths to be twice the radius
 
@@ -60,32 +58,65 @@ def create_axes(radius):
         tips=False
     )
 
-    axes.move_to((0, -4, -2))  # Move the axes to the desired position
+    axes.move_to(position)  # Move the axes to the desired position
     return axes
+
+# Função para calcular as posições das esferas
+
+def calculate_sphere_positions(self, num_qubits):
+    positions = []
+    for i in range(num_qubits):
+        x = i * 3
+        positions.append((x, -4, -2))
+    return positions
 
 
 # Main scene class to visualize the Bloch sphere and quantum states
 class BlochSphere(ThreeDScene):
 
-    def construct(self):    # declaring only what should be started with the constructor
+    def construct(self, n_qubits=None):    # declaring only what should be started with the constructor
 
         # setting the radius of the vector for demonstration purposes, in practice the radius is always constant at 1.
         radius = 2
+        # calculate_sphere_positions(radius, n_qubits)
+        # # create the sphere and axes
+        # sphere = create_sphere(radius)
+        # axes = create_axes(radius)
+        #
+        # # Labels for scene
+        # ket0 = axes.get_z_axis_label(Tex(r"$| 0 \rangle$")).rotate(0, axis=LEFT).next_to(axes.z_axis, 1.0)
+        # ket1 = axes.get_z_axis_label(Tex(r"$| 1 \rangle$")).next_to(axes.z_axis, -2.0).rotate(135, Z_AXIS)
+        # ketX = axes.get_x_axis_label(Tex(r"$| + \rangle$")).next_to(axes.x_axis, 2.5).rotate(-10, axis=RIGHT)
+        #
+        # # Add mobjects (axes, sphere, labels) to the scene
+        # self.add(axes, sphere, ket0, ket1, ketX)
+        #
+        # # Camera setup, i.e. the user's view
+        # self.set_camera_orientation( theta=135 * DEGREES, phi=60 * DEGREES, gamma=0 * DEGREES)
+        # Cálculo das posições das esferas
 
-        # create the sphere and axes
-        sphere = create_sphere(radius)
-        axes = create_axes(radius)
+        sphere_positions = calculate_sphere_positions(n_qubits)
 
-        # Labels for scene
-        ket0 = axes.get_z_axis_label(Tex(r"$| 0 \rangle$")).rotate(0, axis=LEFT).next_to(axes.z_axis, 1.0)
-        ket1 = axes.get_z_axis_label(Tex(r"$| 1 \rangle$")).next_to(axes.z_axis, -2.0).rotate(135, Z_AXIS)
-        ketX = axes.get_x_axis_label(Tex(r"$| + \rangle$")).next_to(axes.x_axis, 2.5).rotate(-10, axis=RIGHT)
+        # Criação das esferas e eixos
+        spheres = []
+        axes = []
 
-        # Add mobjects (axes, sphere, labels) to the scene
-        self.add(axes, sphere, ket0, ket1, ketX)
+        for position in sphere_positions:
+            sphere = create_sphere(radius, position)
+            axis = create_axes(radius, position)
+            spheres.append(sphere)
+            axes.append(axis)
 
-        # Camera setup, i.e. the user's view
-        self.set_camera_orientation( theta=135 * DEGREES, phi=60 * DEGREES, gamma=0 * DEGREES)
+        # Labels para a cena
+        ket0 = axes[0].get_z_axis_label(Tex(r"$| 0 \rangle$")).rotate(0, axis=LEFT).next_to(axes[0].z_axis, 1.0)
+        ket1 = axes[0].get_z_axis_label(Tex(r"$| 1 \rangle$")).next_to(axes[0].z_axis, -2.0).rotate(135, Z_AXIS)
+        ketX = axes[0].get_x_axis_label(Tex(r"$| + \rangle$")).next_to(axes[0].x_axis, 2.5).rotate(-10, axis=RIGHT)
+
+        # Adiciona mobjects (eixos, esferas, labels) à cena
+        self.add(*axes, *spheres, ket0, ket1, ketX)
+
+        # Configuração da câmera
+        self.set_camera_orientation(theta=135 * DEGREES, phi=60 * DEGREES, gamma=0 * DEGREES)
 
 
 # Receives alpha and beta from the qubit and transforms it into a polar representation
@@ -116,15 +147,6 @@ def simulator(circuit):
     y = 1 * np.sin(theta) * np.sin(phi)
     z = 1 * np.cos(theta)
 
-    # Convertendo o vetor de estado para um dicionário de amplitudes
-    amplitudes_dict = state_to_amplitudes_dict(vector)
-
-    # A fase é a chave 'phase' no dicionário de amplitudes
-    phase = amplitudes_dict['phase']
-
-    # Agora você pode usar a fase conforme necessário
-    print("Fase do estado quântico:", phase)
-
     return [x, y, z]
 
 # function that generates the circuit drawing
@@ -150,13 +172,12 @@ def generate_circuit_image(circuit):
 class QuantumCircuit(QuantumCircuit):
     def __init__(self, qreg_q, *args, **kwargs):
         super().__init__(qreg_q, *args, **kwargs)
-        nu_qubits = self.num_qubits
 
-        self.sv = [[] for _ in range(nu_qubits)]
-        self.arrows = [[] for _ in range(nu_qubits)]        # list of vectors created by Arrow3D from positions
-        self.album = [[] for _ in range(nu_qubits)]
+        self.sv = [[] for _ in range(self.num_qubits)]
+        self.arrows = [[] for _ in range(self.num_qubits)]        # list of vectors created by Arrow3D from positions
+        self.album = [[] for _ in range(self.num_qubits)]
 
-        for i in range(nu_qubits):
+        for i in range(self.num_qubits):
             # simulating the circuit and getting the position of the state vector at that instant
             self.sv[i].append(simulator(self))
 
@@ -166,16 +187,37 @@ class QuantumCircuit(QuantumCircuit):
 
     def video(self, speed=15, frames=30):  # self, velocidade, passos
 
-        # creating a 3D scene
-        bloch_sphere = BlochSphere()
-        # starting the constructor
-        bloch_sphere.construct()
+        # # creating a 3D scene
+        # bloch_sphere = BlochSphere()
+        # # starting the constructor
+        # bloch_sphere.construct()
+        #
+        # # Function that creates arrows based on the positions specified in sv
+        # arrows = [create_arrow(*position) for position in self.sv]
+        #
+        # bloch_sphere.add(arrows[0])     #set the 1st vector, ket 0
+        # bloch_sphere.wait(1)    # wait 1 second
+        #
+        # # list to store the trace
+        # vector_points = []
+        bloch_spheres = []  # Lista para armazenar os BlochSpheres para cada qubit
+        arrows = []
+        for i in range(self.num_qubits):
+            bloch_sphere = BlochSphere()
+            # starting the constructor
+            bloch_sphere.construct(self.num_qubits)
 
-        # Function that creates arrows based on the positions specified in sv
-        arrows = [create_arrow(*position) for position in self.sv]
+            # Function that creates arrows based on the positions specified in sv for the i-th qubit
+            arrows[i] = [create_arrow(*position) for position in self.sv[i]]
+            bloch_sphere.add(arrows[i][0])
 
-        bloch_sphere.add(arrows[0])     #set the 1st vector, ket 0
-        bloch_sphere.wait(1)    # wait 1 second
+            # for arrow in arrows:
+            #     bloch_sphere.add(arrow[0])  # Adiciona cada seta individualmente ao BlochSphere
+
+            bloch_sphere.wait(1)  # Espera 1 segundo
+
+            # Adiciona o BlochSphere atual à lista de BlochSpheres
+            bloch_spheres.append(bloch_sphere)
 
         # list to store the trace
         vector_points = []
