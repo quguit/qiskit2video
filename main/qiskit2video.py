@@ -200,15 +200,20 @@ class QuantumCircuit(QuantumCircuit):
         #
         # # list to store the trace
         # vector_points = []
+        
         bloch_spheres = []  # Lista para armazenar os BlochSpheres para cada qubit
         arrows = []
+
         for i in range(self.num_qubits):
+
             bloch_sphere = BlochSphere()
+
             # starting the constructor
             bloch_sphere.construct(self.num_qubits)
 
             # Function that creates arrows based on the positions specified in sv for the i-th qubit
             arrows[i] = [create_arrow(*position) for position in self.sv[i]]
+
             bloch_sphere.add(arrows[i][0])
 
             # for arrow in arrows:
@@ -220,8 +225,9 @@ class QuantumCircuit(QuantumCircuit):
             bloch_spheres.append(bloch_sphere)
 
         # list to store the trace
-        vector_points = []
-
+        trace = []
+        control = 0
+        c = 0
         for i, arrow in enumerate(arrows):
             # Add the image of the circuit corresponding to this step
             circuit_image = self.album[i]
@@ -232,7 +238,7 @@ class QuantumCircuit(QuantumCircuit):
             # transforms the image in the scene as a fixed object in the frame
             bloch_sphere.add_fixed_in_frame_mobjects(circuit_image)
 
-            if i + 1 < len(arrows):
+            for c =0, c + 1 < len(arrows):
                 # 1st vector
                 first_vector = arrows[i]
                 #get the vector [x, y, z]
@@ -243,92 +249,92 @@ class QuantumCircuit(QuantumCircuit):
                 pos_f = np.array(self.sv[i + 1])
                 fim_trajeto = pos_f
 
-        #         # value of the radius based on the coordinates, even knowing that the value is always equal to 1,
-        #         # the algorithm doesn't work if you use the constant r =1.
-        #         r = np.linalg.norm(inicio_trajeto)
-        #
-        #         # Take the angles of the initial vector and convert radians for degrees
-        #         phi_i = np.rad2deg(np.arctan2(inicio_trajeto[1], inicio_trajeto[0]))
-        #         theta_i = np.rad2deg(np.arccos(inicio_trajeto[2] / np.linalg.norm(inicio_trajeto)))
-        #         print("----------------------------------------")
-        #         print("theta_i", theta_i)
-        #         print("phi_i", phi_i)
-        #         # Take the angles of the final vector
-        #         phi_f = np.rad2deg(np.arctan2(fim_trajeto[1], fim_trajeto[0]))
-        #         theta_f = np.rad2deg(np.arccos(fim_trajeto[2] / np.linalg.norm(fim_trajeto)))
-        #         print("theta_f", theta_f)
-        #         print("phi_f", phi_f)
-        #
-        #         if self.gates[i] == 'h':
-        #             if theta_i == 0:
-        #                 phi_i = -90
-        #             elif theta_i == 90:
-        #                 if phi_i == 180:
-        #                     phi_i = -180
-        #                     phi_f = -90
-        #                 else:
-        #                     phi_f = +90
-        #             elif theta_i == 180:
-        #                 phi_i = +90
-        #
-        #         elif self.gates[i] == 'z':
-        #             theta_i = theta_f = 90
-        #         # elif self.gates[i] == 'y':
-        #         #
-        #         elif self.gates[i] == 'x':
-        #             if theta_i == 0:
-        #                 phi_i = phi_f = -90
-        #             elif theta_i == 180:
-        #                 phi_i = phi_f = +90
-        #                 theta_f = 0
-        #         elif self.gates[i] == 's':
-        #             phi_i = phi_f = 90
-        #
-        #
-        #         for j in range(frames + 1):  # for de 0 até frames
-        #
-        #             alpha = j / frames
-        #
-        #             # Interpolate angles
-        #             theta = (1 - alpha) * theta_i + alpha * theta_f
-        #             phi = (1 - alpha) * phi_i + alpha * phi_f
-        #
-        #             if self.gates[i] == 'y':
-        #                 if theta < 180:
-        #                     phi_f = 0
-        #                 else:
-        #                     phi_f = 180
-        #                     theta_f = 90
-        #             print("theta", theta)
-        #             print("phi", phi)
-        #
-        #             # converting to polar
-        #             x_alpha = r * np.sin(np.deg2rad(theta)) * np.cos(np.deg2rad(phi))
-        #             y_alpha = r * np.sin(np.deg2rad(theta)) * np.sin(np.deg2rad(phi))
-        #             z_alpha = r * np.cos(np.deg2rad(theta))
-        #
-        #             # moving the axes from (0,0,0) for ( 0,-4,-2)
-        #             x = (x_alpha * 2)
-        #             y = (y_alpha * 2) - 4
-        #             z = (z_alpha * 2) - 2
-        #
-        #             # this section is responsible for the path trace
-        #             if j > 0:
-        #                 prev_x, prev_y, prev_z = vector_points[-1]
-        #                 line = Line([prev_x, prev_y, prev_z], [x, y, z], color=RED)
-        #                 bloch_sphere.add(line)
-        #             # apply the list so that the line knows where it left off
-        #             vector_points.append((x, y, z))
-        #
-        #             # this is the next position of the vector
-        #             intermediate_arrow = Arrow3D(start=origin, end=np.array([x, y, z]), color=BLUE)
-        #
-        #             # apply the transformation to the next coordinate in the loop and run_time specifies the total time of the animation.
-        #             bloch_sphere.play(Transform(first_vector, intermediate_arrow), run_time=(1 / speed))
-        #
-        # #wait 2 seconds and start scene
-        # bloch_sphere.wait(1)
-        # bloch_sphere.render()
+                # value of the radius based on the coordinates, even knowing that the value is always equal to 1,
+                # the algorithm doesn't work if you use the constant r =1.
+                r = np.linalg.norm(inicio_trajeto)
+        
+                # Take the angles of the initial vector and convert radians for degrees
+                phi_i = np.rad2deg(np.arctan2(inicio_trajeto[1], inicio_trajeto[0]))
+                theta_i = np.rad2deg(np.arccos(inicio_trajeto[2] / np.linalg.norm(inicio_trajeto)))
+                print("----------------------------------------")
+                print("theta_i", theta_i)
+                print("phi_i", phi_i)
+                # Take the angles of the final vector
+                phi_f = np.rad2deg(np.arctan2(fim_trajeto[1], fim_trajeto[0]))
+                theta_f = np.rad2deg(np.arccos(fim_trajeto[2] / np.linalg.norm(fim_trajeto)))
+                print("theta_f", theta_f)
+                print("phi_f", phi_f)
+        
+                if self.gates[i] == 'h':
+                    if theta_i == 0:
+                        phi_i = -90
+                    elif theta_i == 90:
+                        if phi_i == 180:
+                            phi_i = -180
+                            phi_f = -90
+                        else:
+                            phi_f = +90
+                    elif theta_i == 180:
+                        phi_i = +90
+        
+                elif self.gates[i] == 'z':
+                    theta_i = theta_f = 90
+                # elif self.gates[i] == 'y':
+                #
+                elif self.gates[i] == 'x':
+                    if theta_i == 0:
+                        phi_i = phi_f = -90
+                    elif theta_i == 180:
+                        phi_i = phi_f = +90
+                        theta_f = 0
+                elif self.gates[i] == 's':
+                    phi_i = phi_f = 90
+        
+        
+                for j in range(frames + 1):  # for de 0 até frames
+        
+                    alpha = j / frames
+        
+                    # Interpolate angles
+                    theta = (1 - alpha) * theta_i + alpha * theta_f
+                    phi = (1 - alpha) * phi_i + alpha * phi_f
+        
+                    if self.gates[i] == 'y':
+                        if theta < 180:
+                            phi_f = 0
+                        else:
+                            phi_f = 180
+                            theta_f = 90
+                    print("theta", theta)
+                    print("phi", phi)
+        
+                    # converting to polar
+                    x_alpha = r * np.sin(np.deg2rad(theta)) * np.cos(np.deg2rad(phi))
+                    y_alpha = r * np.sin(np.deg2rad(theta)) * np.sin(np.deg2rad(phi))
+                    z_alpha = r * np.cos(np.deg2rad(theta))
+        
+                    # moving the axes from (0,0,0) for ( 0,-4,-2)
+                    x = (x_alpha * 2)
+                    y = (y_alpha * 2) - 4
+                    z = (z_alpha * 2) - 2
+        
+                    # this section is responsible for the path trace
+                    if j > 0:
+                        prev_x, prev_y, prev_z = vector_points[-1]
+                        line = Line([prev_x, prev_y, prev_z], [x, y, z], color=RED)
+                        bloch_sphere.add(line)
+                    # apply the list so that the line knows where it left off
+                    vector_points.append((x, y, z))
+        
+                    # this is the next position of the vector
+                    intermediate_arrow = Arrow3D(start=origin, end=np.array([x, y, z]), color=BLUE)
+        
+                    # apply the transformation to the next coordinate in the loop and run_time specifies the total time of the animation.
+                    bloch_sphere.play(Transform(first_vector, intermediate_arrow), run_time=(1 / speed))
+        
+        #wait 2 seconds and start scene
+        bloch_sphere.wait(1)
+        bloch_sphere.render()
 
 
     #you need to do these 3 steps for the logic gate to work,
