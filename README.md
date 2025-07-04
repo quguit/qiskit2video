@@ -1,86 +1,85 @@
 
-**Using the qiskit2video library, we can create animated images demonstrating the quantum state of a qubit in terms of bloch sphere. This tool shows flexibility by allowing the user to choose the animation speed and the duration of play-back.**
+---
 
-**It's a valuable tool that enables visual exploration of the complex structure of quantum circuits.**
+<img src="https://github.com/user-attachments/assets/2ca6feb1-ae53-4964-95c0-aff22ceed83f" width="180" align="right"/>
 
+# **QISKIT2VIDEO : LIBRARY FOR VISUALIZING THE QUBIT IN QUANTUM CIRCUITS USING THE BLOCH SPHERE** 🌐  
 
-# Analysis of a Qubit on the Bloch Sphere
+**The `qiskit2video` library enables animated visualizations of a qubit’s quantum state on the Bloch sphere, offering customizable animation speed and frame rate for enhanced control.**  
 
-This project focuses on evaluating and representing both the current status of a single qubit within a quantum circuit and how it changes when depicted on the Bloch sphere.
+**A powerful tool for representing the state of a single qubit in a quantum circuit and visualizing its transformations on the Bloch sphere.**  
 
-## Introdução
+## 📊 **Qubit Analysis on the Bloch Sphere**  
 
-The fundamental building block of quantum information processing is called a qubit, which acts as an equivalent counterpart to classical bits but with added capabilities such as existing in different base states simultaneously ($\ket{0}$ and $\ket{1}$). In order to represent these base states, one uses vectors in Hilbert space having complex components which correspond to a finite space equipped with an inner product.
-			
-The current state of a qubit can be analyzed using:
+This project evaluates and visualizes single-qubit states in quantum circuits, demonstrating their transformations on the Bloch sphere.  
 
-$\ket{\psi} = \alpha\ket{1} + \beta\ket{0}$
+## ⚗️ **Theoretical Background**  
 
+The qubit—quantum computing’s fundamental unit—extends classical bits by allowing superposition of basis states ($\ket{0}$ and $\ket{1}$). These states are represented as vectors in Hilbert space with complex coefficients.  
 
-Real or imaginary, $\alpha$ e $\beta$ assume various values whose addition yields a modulus sum equaling $|\alpha|+|\beta|=1$. By understanding this concept, it becomes apparent how probabilities for observing different states arise upon measuring $\ket{\psi}$, ultimately leading to a collapse in its superposition form towards one particular base state.
+A qubit’s state is expressed as:  
 
- Quantum gates modify the system's state through unitary matrices that consist of complex elements.
+$$\ket{\psi} = \alpha\ket{1} + \beta\ket{0}$$  
 
-## Project stages
+Here, $\alpha$ and $\beta$ are complex values satisfying $|\alpha|^2 + |\beta|^2 = 1$, defining the measurement probabilities of $\ket{\psi}$ collapsing to either basis state.  
 
-In this project, we took the following steps:
+Quantum gates manipulate qubit states via unitary matrices with complex elements.  
 
-1. A function that receives the 1 qubit circuit and returns the state vector
-2. The state vector is stored in a list.
-3. At the end, the list with the state vectors must be passed to a function that builds a Manin-based video showing the state transitions in the bloch sphere.
-4. **Quantum Gates:** For a qubit, we brought examples with Hadamard and Pauli-x gates.
-![Matriz](matrix.png)
+## 🎛️ **Project Workflow**  
 
-## To use this project, follow these steps:
+1. **State Extraction**: A function ingests a single-qubit circuit and returns its state vector.  
+2. **State Tracking**: Each state vector is stored in a sequential list.  
+3. **Visualization**: The list is passed to a Manim-based function, generating a video of state transitions on the Bloch sphere.  
+4. **Gate Demonstrations**: Includes Hadamard and Pauli-X gates.  
 
-1. **Clone the Repository:** Clone this repository on your local machine using the following command:
-```github
-git clone https://github.com/qguit/knowledge-representation.git
-```
-3. **Execute Code:**: Open the source code and follow the instructions to analyze the qubit and visualize its transformations on the Bloch sphere.
+![Matrix](matrix.png)  
 
-4. **Contributions:**: Feel free to contribute improvements or corrections to this project. Just fork the repository, make your changes and send a pull request.
-5. 
-## Prerequisites
+## **Usage**  
 
-Make sure you have the following libraries and tools installed on your machine:
+1. **Clone the Repository**:  
+   ```bash  
+   git clone https://github.com/lasdi/qiskit2video.git  
+   ```  
 
-- [Python3](https://packaging.python.org/pt_BR/latest/guides/installing-using-pip-and-virtual-environments/)
-  
-- [Bibliotecas de computação quântica (Qiskit)](https://qiskit.org/documentation/stable/0.24/locale/pt_BR/install.html)
-  
-- [Biblioteca Manim ](https://docs.manim.community/en/stable/installation.html)
+2. **Run the Code**: Execute the provided scripts to analyze and visualize qubit transformations.  
 
-## Example of use:
+3. **Contribute**: Fork the repository, implement improvements, and submit pull requests.  
 
-```python
-# Exemplo de código Python para representar um qubit na esfera de Bloch
+## **Prerequisites**  
 
-from qiskit2video import *
+- [Python 3](https://www.python.org/downloads/)  
+- [Qiskit](https://qiskit.org/documentation/install.html)  
+- [Manim](https://docs.manim.community/en/stable/installation.html)  
 
-qreg_q = QuantumRegister(1, 'q')
-creg_c = ClassicalRegister(0, 'c')
-circuit = QuantumCircuit(qreg_q, creg_c)
+## **Example**  
 
-circuit.x(qreg_q[0])
-circuit.h(qreg_q[0])
-circuit.h(qreg_q[0])
-circuit.z(qreg_q[0])
-circuit.h(qreg_q[0])
-circuit.y(qreg_q[0])
-circuit.x(qreg_q[0])
+```python  
+from qiskit2video import *  
 
-circuit.video(1)
-```
+qreg_q = QuantumRegister(1, 'q')  
+creg_c = ClassicalRegister(0, 'c')  
+circuit = QuantumCircuit(qreg_q, creg_c)  
 
-Contributions are welcome! 
+# Apply quantum gates  
+circuit.h(qreg_q[0])  
+circuit.x(qreg_q[0])  
+circuit.y(qreg_q[0])  
+circuit.z(qreg_q[0])  
 
-In the event that you come across bugs, problems or have ideas for 
-additional features, feel free to open an 
-issue or send a pull request.
+# Render animation (speed=30, frames=60)  
+circuit.video(speed=30, frames=60)  
+```  
 
-This project is governed by the Apache License - check the LICENSE file for more information.
+## **Output**  
+https://github.com/lasdi/qiskit2video/assets/146500715/8c778b1a-dc34-4542-83a4-20af3c505dde  
 
- Have fun discovering the wonders of quantum computing and exploring the analysis of qubits on the Bloch sphere.
+---
 
+### **Contributions Welcome!** 🔍  
+Found a bug or have a feature idea? Open an issue or submit a pull request.  
 
+**License**: Apache 2.0 (see [LICENSE](LICENSE)).  
+
+**Explore the wonders of quantum computing with dynamic Bloch sphere visualizations!** ⚛️  
+
+---  
