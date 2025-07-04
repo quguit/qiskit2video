@@ -1,2 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:/home/guilherme/Área de Trabalho/Github/qiskit2video/media/videos/test1/480p15/partial_movie_files/teste/358817807_3274574015_2482767750.mp4'

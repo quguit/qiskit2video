@@ -1,0 +1,12 @@
+
+version: '3.8'
+
+services:
+  qiskit2video:
+    build: .
+    volumes:
+      - .:/app
+    working_dir: /app
+    environment:
+      - DISPLAY=host.docker.internal:0  # For GUI on macOS/Windows
+    tty: true  # Keeps container running
