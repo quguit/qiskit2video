@@ -1,8 +1,6 @@
-
-numpy
-scipy
-matplotlib
-pandas
-sympy
-pillow
-tqdm
+qiskit==1.4.0
+qiskit-aer==0.15.1
+manim==0.19.0
+numpy>=1.26,<2.0
+matplotlib>=3.7
+pylatexenc>=2.10

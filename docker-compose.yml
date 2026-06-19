@@ -4,4 +4,4 @@ services:
     volumes:
       - .:/app
     working_dir: /app
-    command: manim -ql scenes/bloch_scene.py BlochSphereScene
+    command: python main.py
