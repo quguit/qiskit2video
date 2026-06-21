@@ -131,12 +131,29 @@ class BlochSphereScene(ThreeDScene):
         spheres = [create_sphere(radius, p) for p in sphere_positions]
         axes_list = [create_axes(radius, p) for p in sphere_positions]
 
-        ket0 = axes_list[0].get_z_axis_label(Tex(r"$| 0 \rangle$")).rotate(0, axis=LEFT).next_to(axes_list[0].z_axis, 1.0)
-        ket1 = axes_list[0].get_z_axis_label(Tex(r"$| 1 \rangle$")).next_to(axes_list[0].z_axis, -2.0).rotate(135, OUT)
-        ketX = axes_list[0].get_x_axis_label(Tex(r"$| + \rangle$")).next_to(axes_list[0].x_axis, 2.5).rotate(-10, axis=RIGHT)
+        ket0 = (
+            axes_list[0]
+            .get_z_axis_label(Tex(r"$| 0 \rangle$"))
+            .rotate(0, axis=LEFT)
+            .next_to(axes_list[0].z_axis, 1.0)
+        )
+        ket1 = (
+            axes_list[0]
+            .get_z_axis_label(Tex(r"$| 1 \rangle$"))
+            .next_to(axes_list[0].z_axis, -2.0)
+            .rotate(135, OUT)
+        )
+        ketX = (
+            axes_list[0]
+            .get_x_axis_label(Tex(r"$| + \rangle$"))
+            .next_to(axes_list[0].x_axis, 2.5)
+            .rotate(-10, axis=RIGHT)
+        )
 
         self.add(*axes_list, *spheres, ket0, ket1, ketX)
-        self.set_camera_orientation(theta=135 * DEGREES, phi=60 * DEGREES, gamma=0 * DEGREES)
+        self.set_camera_orientation(
+            theta=135 * DEGREES, phi=60 * DEGREES, gamma=0 * DEGREES
+        )
 
         if self.num_qubits > 1:
             print(
@@ -224,8 +241,13 @@ class BlochSphereScene(ThreeDScene):
                     self.add(Line([prev_x, prev_y, prev_z], [x, y, z], color=RED))
                 vector_points.append((x, y, z))
 
-                intermediate_arrow = Arrow3D(start=origin, end=np.array([x, y, z]), color=BLUE)
-                self.play(Transform(current_arrow, intermediate_arrow), run_time=(1 / self.speed))
+                intermediate_arrow = Arrow3D(
+                    start=origin, end=np.array([x, y, z]), color=BLUE
+                )
+                self.play(
+                    Transform(current_arrow, intermediate_arrow),
+                    run_time=(1 / self.speed),
+                )
 
             # Atualiza a imagem do circuito para o próximo passo
             self.remove(current_image)
@@ -273,45 +295,60 @@ class TrackedQuantumCircuit(QuantumCircuit):
         self.sv[qubit_index].append(simulator(self))
         self.album[qubit_index].append(generate_circuit_image(self))
 
+    def _qubit_index(self, qubit):
+        """
+        Resolve o índice inteiro de um qubit dentro deste circuito.
+
+        Aceita tanto um objeto `Qubit` quanto um `int` direto (ex:
+        `circuit.h(0)`). Usa `find_bit()`, a API atual do Qiskit 1.x —
+        `Qubit.index` foi removido porque, com suporte a múltiplos
+        registradores por circuito, o índice de um qubit passou a depender
+        do circuito em que ele está inserido, não é mais uma propriedade
+        fixa do próprio objeto `Qubit`.
+        """
+        if isinstance(qubit, int):
+            return qubit
+        return self.find_bit(qubit).index
+
     def h(self, qubit):
         super().h(qubit)
-        i = qubit.index if hasattr(qubit, "index") else qubit
+        i = self._qubit_index(qubit)
         self.gates[i].append("h")
         self._track(i)
 
     def x(self, qubit):
         super().x(qubit)
-        i = qubit.index if hasattr(qubit, "index") else qubit
+        i = self._qubit_index(qubit)
         self.gates[i].append("x")
         self._track(i)
 
     def y(self, qubit):
         super().y(qubit)
-        i = qubit.index if hasattr(qubit, "index") else qubit
+        i = self._qubit_index(qubit)
         self.gates[i].append("y")
         self._track(i)
 
     def z(self, qubit):
         super().z(qubit)
-        i = qubit.index if hasattr(qubit, "index") else qubit
+        i = self._qubit_index(qubit)
         self.gates[i].append("z")
         self._track(i)
 
     def s(self, qubit):
         super().s(qubit)
-        i = qubit.index if hasattr(qubit, "index") else qubit
+        i = self._qubit_index(qubit)
         self.gates[i].append("s")
         self._track(i)
 
     def t(self, qubit):
         super().t(qubit)
-        i = qubit.index if hasattr(qubit, "index") else qubit
+        i = self._qubit_index(qubit)
         self.gates[i].append("t")
         self._track(i)
 
     def u(self, theta1, theta2, theta3, qubit):
         super().u(theta1, theta2, theta3, qubit)
-        i = qubit.index if hasattr(qubit, "index") else qubit
+        i = self._qubit_index(qubit)
         self.gates[i].append("u")
         self._track(i)
 
