@@ -6,6 +6,8 @@ FROM python:3.11-slim
 # - libcairo2-dev / libpango1.0-dev: required by Manim for text/shape rendering
 # - ffmpeg: required by Manim for video encoding
 # - texlive subset: required by Manim for Tex/MathTex (texlive-full is unnecessary and adds ~5GB)
+# - dvisvgm: converts the .dvi LaTeX output into .svg — Manim calls this binary
+#   directly for every Tex()/MathTex() mobject; not bundled with texlive packages above
 # - libgl1: required for OpenGL rendering (replaces libgl1-mesa-glx on newer Debian)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -21,6 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     texlive-latex-recommended \
     texlive-science \
     tipa \
+    dvisvgm \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
